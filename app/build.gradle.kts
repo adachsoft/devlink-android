@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "__APPLICATION_ID__"
+    namespace = "com.adachsoft.devlink"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "__APPLICATION_ID__"
+        applicationId = "com.adachsoft.devlink"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

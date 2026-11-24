@@ -1,4 +1,4 @@
-# __PROJECT_NAME__
+# devlink-android
 
 ## Requirements
 
@@ -27,4 +27,4 @@ gradlew.bat assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Application ID: `__APPLICATION_ID__`.
+Application ID: `com.adachsoft.devlink`.

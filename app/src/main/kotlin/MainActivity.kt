@@ -1,4 +1,4 @@
-package __APPLICATION_ID__
+package com.adachsoft.devlink
 
 import android.app.Activity
 import android.os.Bundle
@@ -7,6 +7,6 @@ import android.widget.TextView
 class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(TextView(this).apply { text = "__PROJECT_NAME__" })
+        setContentView(TextView(this).apply { text = "devlink-android" })
     }
 }

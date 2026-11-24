@@ -1,0 +1,7 @@
+build:
+  image: cimg/android:2025.10
+  script:
+    - ./gradlew assembleDebug --no-daemon
+  artifacts:
+    paths:
+      - app/build/outputs/apk/debug/*.apk

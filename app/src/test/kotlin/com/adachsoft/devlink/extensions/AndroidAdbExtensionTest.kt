@@ -11,11 +11,17 @@ import org.junit.Test
 class AndroidAdbExtensionTest {
     private val secureSettings = FakeSecureSettings()
     private val extensionSettings = FakeExtensionSettings()
+    private var discoveredPort: Int? = null
+    private var discoveredPortClearCount = 0
     private val extension = AndroidAdbExtension(
         secureSettings = secureSettings,
         extensionSettings = extensionSettings,
         ipAddressProvider = { "192.168.1.22" },
-        discoveredPortProvider = { null },
+        discoveredPortProvider = { discoveredPort },
+        onWirelessDebuggingDisabled = {
+            discoveredPort = null
+            discoveredPortClearCount++
+        },
     )
 
     @Test
@@ -51,6 +57,22 @@ class AndroidAdbExtensionTest {
         assertEquals(200, response.statusCode)
         assertEquals(1, secureSettings.values[AndroidAdbExtension.ADB_WIFI_ENABLED_SETTING])
         assertTrue(JSONObject(response.body).getBoolean("wirelessDebuggingEnabled"))
+    }
+
+    @Test
+    fun disabledWirelessDebuggingReportsNullPortAndClearsDiscoveredPort() {
+        secureSettings.values[AndroidAdbExtension.ADB_WIFI_ENABLED_SETTING] = 0
+        secureSettings.values[AndroidAdbExtension.ADB_WIFI_PORT_SETTING] = 5555
+        discoveredPort = 5556
+
+        val response = extension.handle("GET", "/state", null)!!
+
+        assertEquals(200, response.statusCode)
+        val state = JSONObject(response.body)
+        assertFalse(state.getBoolean("wirelessDebuggingEnabled"))
+        assertTrue(state.isNull("port"))
+        assertEquals(null, discoveredPort)
+        assertEquals(1, discoveredPortClearCount)
     }
 
     private class FakeSecureSettings : SecureSettings {

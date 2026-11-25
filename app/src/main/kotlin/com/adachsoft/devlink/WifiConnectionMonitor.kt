@@ -2,6 +2,7 @@ package com.adachsoft.devlink
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.LinkProperties
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
@@ -11,7 +12,10 @@ import com.adachsoft.devlink.extensions.WifiConnectionState
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 
-internal class WifiConnectionMonitor(context: Context) : WifiConnection {
+internal class WifiConnectionMonitor(
+    context: Context,
+    private val onWifiNetworkChanged: (Network?, String?) -> Unit = { _, _ -> },
+) : WifiConnection {
     private val applicationContext = context.applicationContext
     private val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     private val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -22,10 +26,37 @@ internal class WifiConnectionMonitor(context: Context) : WifiConnection {
     @Volatile
     private var lastDisconnectAt: String? = null
     private var callbackRegistered = false
+    private var currentWifiNetwork: Network? = null
+    private var currentWifiLinkProperties: LinkProperties? = null
+    private var currentWifiIpAddress: String? = null
 
     private val monitorCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            setCurrentWifiNetwork(network)
+        }
+
+        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+            if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                setCurrentWifiNetwork(network)
+                updateCurrentWifiAddress()
+            } else if (network == currentWifiNetwork) {
+                clearCurrentWifiNetwork()
+            }
+        }
+
+        override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
+            if (network != currentWifiNetwork) {
+                return
+            }
+            currentWifiLinkProperties = linkProperties
+            updateCurrentWifiAddress()
+        }
+
         override fun onLost(network: Network) {
             lastDisconnectAt = Instant.now().toString()
+            if (network == currentWifiNetwork) {
+                clearCurrentWifiNetwork()
+            }
         }
     }
 
@@ -115,6 +146,36 @@ internal class WifiConnectionMonitor(context: Context) : WifiConnection {
         } catch (_: IllegalArgumentException) {
             // Reconnection is best effort; there is no deprecated Wi-Fi toggle fallback.
         }
+    }
+
+    private fun setCurrentWifiNetwork(network: Network) {
+        if (currentWifiNetwork == network) {
+            return
+        }
+        currentWifiNetwork = network
+        currentWifiLinkProperties = null
+        currentWifiIpAddress = null
+        onWifiNetworkChanged(network, null)
+    }
+
+    private fun updateCurrentWifiAddress() {
+        val network = currentWifiNetwork ?: return
+        val address = WifiIpAddressProvider.ipv4Address(currentWifiLinkProperties)
+        if (address == currentWifiIpAddress) {
+            return
+        }
+        currentWifiIpAddress = address
+        onWifiNetworkChanged(network, address)
+    }
+
+    private fun clearCurrentWifiNetwork() {
+        if (currentWifiNetwork == null) {
+            return
+        }
+        currentWifiNetwork = null
+        currentWifiLinkProperties = null
+        currentWifiIpAddress = null
+        onWifiNetworkChanged(null, null)
     }
 
     companion object {

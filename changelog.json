@@ -12,6 +12,11 @@
                 "Added the `android.adb` extension for wireless debugging and enable-on-boot, with secure-settings permission checks and an NSD port fallback.",
                 "Added the `power.keep-awake` and `network.wifi` extensions, including best-effort Wi-Fi network requests and a high-performance Wi-Fi lock while the service runs.",
                 "Added HTTP problem responses for malformed JSON and invalid requests, plus response mapping for accepted, bad-request, and conflict statuses."
+            ],
+            "fixed": [
+                "Wait for an IPv4 Wi-Fi connection before enabling wireless debugging on boot, and make at most one enable attempt per connection after Wi-Fi reconnects.",
+                "Refresh the foreground notification and re-register the devlink NSD service when Wi-Fi connectivity or its IP address changes, without duplicate registrations.",
+                "Return a null ADB port and clear discovered ADB port data while wireless debugging is disabled; clear the discovered port cache when the Wi-Fi IP changes."
             ]
         }
     }

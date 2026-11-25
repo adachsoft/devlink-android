@@ -12,6 +12,7 @@ class AndroidAdbExtension(
     private val extensionSettings: ExtensionSettings,
     private val ipAddressProvider: () -> String?,
     private val discoveredPortProvider: () -> Int?,
+    private val onWirelessDebuggingDisabled: () -> Unit = {},
 ) : DevlinkExtension {
     override val id: String = ID
     override val version: String = VERSION
@@ -71,13 +72,19 @@ class AndroidAdbExtension(
     }
 
     private fun state(): JSONObject {
-        val port = secureSettings.getInt(ADB_WIFI_PORT_SETTING)
-            ?.takeIf { it > 0 }
-            ?: discoveredPortProvider()?.takeIf { it > 0 }
+        val wirelessDebuggingEnabled = secureSettings.getInt(ADB_WIFI_ENABLED_SETTING) == 1
+        val port = if (wirelessDebuggingEnabled) {
+            secureSettings.getInt(ADB_WIFI_PORT_SETTING)
+                ?.takeIf { it > 0 }
+                ?: discoveredPortProvider()?.takeIf { it > 0 }
+        } else {
+            onWirelessDebuggingDisabled()
+            null
+        }
         val ipAddress = ipAddressProvider()?.takeIf(String::isNotBlank)
 
         return JSONObject()
-            .put("wirelessDebuggingEnabled", secureSettings.getInt(ADB_WIFI_ENABLED_SETTING) == 1)
+            .put("wirelessDebuggingEnabled", wirelessDebuggingEnabled)
             .put("port", port ?: JSONObject.NULL)
             .put("ipAddress", ipAddress ?: JSONObject.NULL)
             .put("secureSettingsPermission", secureSettings.hasWritePermission())

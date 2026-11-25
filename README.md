@@ -39,7 +39,7 @@ adb shell pm grant com.adachsoft.devlink android.permission.WRITE_SECURE_SETTING
 
 Then open devlink on the device and explicitly switch on `android.adb` and/or `power.keep-awake`. The API cannot change extension enablement. Enabling the ADB extension does not grant the permission; without it, write requests return `409 Conflict` with code `permission-missing`. `power.keep-awake` and `android.adb` are disabled by default. Android 13 and later also prompt for notification permission at runtime.
 
-The `android.adb` extension can also enable wireless debugging after boot. Enable `android.adb` on the device, grant the permission, then use `PUT /ext/android.adb/v1/enable-on-boot` to opt in. The boot receiver only changes the ADB setting when all three conditions are met.
+The `android.adb` extension supports enable on boot and after Wi-Fi reconnects. Enable `android.adb` on the device, grant the permission, then use `PUT /ext/android.adb/v1/enable-on-boot` to opt in. After boot or a Wi-Fi reconnect, the service waits for an IPv4 address and makes at most one enable attempt for that connection when the extension is enabled, the preference is on, and `WRITE_SECURE_SETTINGS` is granted. Android may still reject wireless debugging on an untrusted network.
 
 ## Read the bearer token
 

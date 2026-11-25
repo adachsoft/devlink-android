@@ -18,6 +18,17 @@ object ProblemResponses {
     fun badRequest(detail: String, code: String? = null): ApiResponse =
         problem(status = 400, title = "Bad Request", detail = detail, code = code)
 
+    fun invalidParameter(detail: String): ApiResponse =
+        problem(status = 400, title = "Invalid parameter", detail = detail, code = "invalid-parameter")
+
+    fun tooManyRequests(): ApiResponse = problem(
+        status = 429,
+        title = "Too Many Requests",
+        detail = "Wait before requesting another screenshot.",
+        headers = mapOf("Retry-After" to "1"),
+        code = "rate-limited",
+    )
+
     fun conflict(title: String, detail: String, code: String? = null): ApiResponse =
         problem(status = 409, title = title, detail = detail, code = code)
 

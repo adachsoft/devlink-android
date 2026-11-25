@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `android.adb` extension for wireless debugging and enable-on-boot, with secure-settings permission checks and an NSD port fallback.
 - Added the `power.keep-awake` and `network.wifi` extensions, including best-effort Wi-Fi network requests and a high-performance Wi-Fi lock while the service runs.
 - Added HTTP problem responses for malformed JSON and invalid requests, plus response mapping for accepted, bad-request, and conflict statuses.
+- Added binary HTTP responses and extension query-parameter forwarding, including HTTP 429 responses with preserved headers.
+- Added the sensitive `display.screenshot` extension with explicit in-app and Accessibility Settings opt-in, authenticated LAN capture through AccessibilityService, PNG/JPEG output, state reporting, parameter validation, and rate limiting.
+- Documented screenshot enablement and file-saving curl examples, and added fake-capturer unit tests.
 ### Fixed
 - Wait for an IPv4 Wi-Fi connection before enabling wireless debugging on boot, and make at most one enable attempt per connection after Wi-Fi reconnects.
 - Refresh the foreground notification and re-register the devlink NSD service when Wi-Fi connectivity or its IP address changes, without duplicate registrations.

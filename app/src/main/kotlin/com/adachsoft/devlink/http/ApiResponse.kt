@@ -7,9 +7,23 @@ data class ApiResponse(
     val body: String,
     val contentType: String = "application/json",
     val headers: Map<String, String> = emptyMap(),
+    val binaryBody: ByteArray? = null,
 ) {
     companion object {
         fun json(body: JSONObject, statusCode: Int = 200): ApiResponse =
             ApiResponse(statusCode = statusCode, body = body.toString())
+
+        fun binary(
+            body: ByteArray,
+            contentType: String,
+            statusCode: Int = 200,
+            headers: Map<String, String> = emptyMap(),
+        ): ApiResponse = ApiResponse(
+            statusCode = statusCode,
+            body = "",
+            contentType = contentType,
+            headers = headers,
+            binaryBody = body,
+        )
     }
 }

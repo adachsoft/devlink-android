@@ -85,6 +85,23 @@ class RouterTest {
     }
 
     @Test
+    fun passesQueryParametersToExtensions() {
+        val extension = FakeExtension()
+        val router = createRouter(listOf(extension), listOf(extension.scope))
+
+        val response = router.handle(
+            method = "GET",
+            path = "${extension.basePath}/query",
+            authorizationHeader = "Bearer test-token",
+            query = mapOf("format" to "jpeg", "display" to "2"),
+        )
+        val body = JSONObject(response.body)
+
+        assertEquals("jpeg", body.getString("format"))
+        assertEquals("2", body.getString("display"))
+    }
+
+    @Test
     fun returnsBadRequestWhenRequestBodyIsInvalidJson() {
         val extension = FakeExtension()
         val router = createRouter(listOf(extension), listOf(extension.scope))
@@ -126,7 +143,19 @@ class RouterTest {
 
         override fun statusSection(): JSONObject = JSONObject().put("state", "ready")
 
-        override fun handle(method: String, subPath: String, body: JSONObject?): ApiResponse? {
+        override fun handle(
+            method: String,
+            subPath: String,
+            body: JSONObject?,
+            query: Map<String, String>,
+        ): ApiResponse? {
+            if (subPath == "/query") {
+                return ApiResponse.json(
+                    JSONObject()
+                        .put("format", query["format"])
+                        .put("display", query["display"]),
+                )
+            }
             if (subPath != "/state") {
                 return null
             }

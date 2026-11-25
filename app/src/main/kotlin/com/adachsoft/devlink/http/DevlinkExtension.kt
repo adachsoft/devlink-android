@@ -13,5 +13,10 @@ interface DevlinkExtension {
 
     fun statusSection(): JSONObject
 
-    fun handle(method: String, subPath: String, body: JSONObject?): ApiResponse?
+    fun handle(
+        method: String,
+        subPath: String,
+        body: JSONObject?,
+        query: Map<String, String> = emptyMap(),
+    ): ApiResponse?
 }

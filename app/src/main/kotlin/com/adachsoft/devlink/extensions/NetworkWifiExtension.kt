@@ -44,7 +44,12 @@ class NetworkWifiExtension(
 
     override fun statusSection(): JSONObject = wifiConnection.currentState().toJson()
 
-    override fun handle(method: String, subPath: String, body: JSONObject?): ApiResponse? = when (subPath) {
+    override fun handle(
+        method: String,
+        subPath: String,
+        body: JSONObject?,
+        query: Map<String, String>,
+    ): ApiResponse? = when (subPath) {
         "/state" -> if (method.equals("GET", ignoreCase = true)) {
             ApiResponse.json(wifiConnection.currentState().toJson())
         } else {

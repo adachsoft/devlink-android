@@ -14,12 +14,20 @@ class Router(
         path: String,
         authorizationHeader: String?,
         body: JSONObject? = null,
-    ): ApiResponse = handleWithBodyProvider(method, path, authorizationHeader) { body }
+        query: Map<String, String> = emptyMap(),
+    ): ApiResponse = handleWithBodyProvider(
+        method = method,
+        path = path,
+        authorizationHeader = authorizationHeader,
+        query = query,
+        bodyProvider = { body },
+    )
 
     internal fun handleWithBodyProvider(
         method: String,
         path: String,
         authorizationHeader: String?,
+        query: Map<String, String> = emptyMap(),
         bodyProvider: () -> JSONObject?,
     ): ApiResponse {
         if (!authenticator.authenticate(authorizationHeader)) {
@@ -36,7 +44,7 @@ class Router(
         }
 
         return try {
-            route(method.uppercase(Locale.ROOT), path, bodyProvider, extension)
+            route(method.uppercase(Locale.ROOT), path, bodyProvider, query, extension)
         } catch (_: JSONException) {
             ProblemResponses.badRequest(
                 detail = "The request body must be valid JSON.",
@@ -51,6 +59,7 @@ class Router(
         method: String,
         path: String,
         bodyProvider: () -> JSONObject?,
+        query: Map<String, String>,
         extension: DevlinkExtension?,
     ): ApiResponse {
         val coreMethod = when (path) {
@@ -81,7 +90,7 @@ class Router(
         }
 
         val subPath = path.removePrefix(extension.basePath).ifEmpty { "/" }
-        return extension.handle(method, subPath, bodyProvider()) ?: ProblemResponses.notFound()
+        return extension.handle(method, subPath, bodyProvider(), query) ?: ProblemResponses.notFound()
     }
 
     companion object {

@@ -45,6 +45,7 @@ class SharedPreferencesExtensionSettings(context: Context) : ExtensionSettings {
             "network.wifi" to true,
             "android.adb" to false,
             "power.keep-awake" to false,
+            "display.screenshot" to false,
         )
     }
 }

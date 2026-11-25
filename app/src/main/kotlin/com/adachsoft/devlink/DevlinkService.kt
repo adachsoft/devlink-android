@@ -15,7 +15,9 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import com.adachsoft.devlink.extensions.AndroidAdbExtension
+import com.adachsoft.devlink.extensions.AccessibilityScreenCapturer
 import com.adachsoft.devlink.extensions.DeviceBatteryExtension
+import com.adachsoft.devlink.extensions.DisplayScreenshotExtension
 import com.adachsoft.devlink.extensions.NetworkWifiExtension
 import com.adachsoft.devlink.extensions.PowerKeepAwakeExtension
 import com.adachsoft.devlink.http.BearerAuthenticator
@@ -139,6 +141,10 @@ class DevlinkService : Service() {
                     ),
                     PowerKeepAwakeExtension(secureSettings, extensionSettings),
                     NetworkWifiExtension(wifiMonitor, extensionSettings),
+                    DisplayScreenshotExtension(
+                        screenCapturer = AccessibilityScreenCapturer(),
+                        extensionSettings = extensionSettings,
+                    ),
                 ),
             )
             val token = TokenStore(applicationContext).getOrCreateToken()

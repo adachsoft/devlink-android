@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Switch
@@ -18,6 +19,7 @@ class MainActivity : Activity() {
     private lateinit var serviceStatus: TextView
     private lateinit var networkAddress: TextView
     private lateinit var tokenView: TextView
+    private lateinit var accessibilityServiceStatus: TextView
     private lateinit var toggleButton: Button
     private lateinit var token: String
     private lateinit var extensionSettings: ExtensionSettings
@@ -73,6 +75,14 @@ class MainActivity : Activity() {
         addExtensionSwitch(this, "Network Wi-Fi", "network.wifi")
         addExtensionSwitch(this, "Android wireless debugging (sensitive)", AndroidAdbExtension.ID)
         addExtensionSwitch(this, "Keep screen awake while charging (sensitive)", "power.keep-awake")
+        addExtensionSwitch(this, "Display screenshot (sensitive)", "display.screenshot")
+        accessibilityServiceStatus = addStatusLine(this, "Screenshot accessibility service: not connected")
+        addView(Button(this@MainActivity).apply {
+            text = "Open accessibility settings"
+            setOnClickListener {
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            }
+        }, defaultLayoutParams())
         toggleButton = Button(this@MainActivity).apply {
             setOnClickListener { toggleAgentService() }
         }
@@ -138,6 +148,12 @@ class MainActivity : Activity() {
         val address = WifiIpAddressProvider.currentAddress(this) ?: "unavailable"
         networkAddress.text = "Wi-Fi: $address:${DevlinkHttpServer.PORT}"
         tokenView.text = "Token: $token"
+        val screenshotServiceStatus = if (DevlinkAccessibilityService.connectedInstance != null) {
+            "connected"
+        } else {
+            "not connected"
+        }
+        accessibilityServiceStatus.text = "Screenshot accessibility service: $screenshotServiceStatus"
         toggleButton.text = if (DevlinkService.isRunning) "Stop" else "Start"
     }
 

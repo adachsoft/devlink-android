@@ -1,8 +1,8 @@
 # devlink-android
 
-A native Android LAN agent that exposes the devlink v0.1.0 API over HTTP. The foreground service listens on port `8787`, restricts requests to private and local source addresses, and requires a bearer token. It advertises itself through Android NSD and provides device information, extension discovery, status, and the `device.battery`, `android.adb`, `power.keep-awake`, and `network.wifi` extensions.
+A native Android LAN agent that exposes the devlink v0.1.0 API over HTTP. The foreground service listens on port `8787`, restricts requests to private and local source addresses, and requires a bearer token. It advertises itself through Android NSD and provides device information, extension discovery, status, and the `device.battery`, `android.adb`, `power.keep-awake`, `network.wifi`, and `display.screenshot` extensions.
 
-The main screen displays the service state, the Wi-Fi address and port, and the bearer token. It also provides an on-device switch for each extension. Extension changes take effect without restarting the service. `android.adb` and `power.keep-awake` are disabled by default and must be explicitly enabled on the device. The service starts when the app opens and can be stopped or started from the screen.
+The main screen displays the service state, the Wi-Fi address and port, and the bearer token. It also provides an on-device switch for each extension. Extension changes take effect without restarting the service. `android.adb`, `power.keep-awake`, and `display.screenshot` are disabled by default and must be explicitly enabled on the device. The service starts when the app opens and can be stopped or started from the screen.
 
 ## Requirements
 
@@ -56,6 +56,29 @@ TOKEN="$(adb shell cat /sdcard/Android/data/com.adachsoft.devlink/files/token.tx
 BASE_URL="http://192.168.1.50:8787"
 curl -H "Authorization: Bearer ${TOKEN}" "${BASE_URL}/v1/info"
 curl -H "Authorization: Bearer ${TOKEN}" "${BASE_URL}/v1/status"
+```
+
+## Screen capture
+
+The sensitive `display.screenshot` extension is disabled by default. To enable it:
+
+1. Turn on **Display screenshot (sensitive)** in the devlink app.
+2. Open **Settings → Accessibility → devlink screenshots** and enable the accessibility service.
+
+The service captures the screen only for an authenticated LAN request while the extension is enabled. Save a PNG image with:
+
+```sh
+curl --fail -H "Authorization: Bearer ${TOKEN}" \
+  -o screenshot.png "${BASE_URL}/ext/display.screenshot/v1/image"
+```
+
+The state endpoint reports capture availability and the minimum interval. JPEG capture accepts a `quality` value from 1 to 100; `display` defaults to `0`:
+
+```sh
+curl -H "Authorization: Bearer ${TOKEN}" \
+  "${BASE_URL}/ext/display.screenshot/v1/state"
+curl --fail -H "Authorization: Bearer ${TOKEN}" \
+  -o screenshot.jpg "${BASE_URL}/ext/display.screenshot/v1/image?format=jpeg&quality=90&display=0"
 ```
 
 ## Extension examples

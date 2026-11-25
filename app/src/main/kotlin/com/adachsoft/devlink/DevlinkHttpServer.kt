@@ -7,6 +7,7 @@ import com.adachsoft.devlink.http.SourceAddressPolicy
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.IHTTPSession
 import fi.iki.elonen.NanoHTTPD.Response
+import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import org.json.JSONObject
 
@@ -31,6 +32,9 @@ internal class DevlinkHttpServer(
                 method = method,
                 path = session.uri,
                 authorizationHeader = authorizationHeader,
+                query = session.parameters.mapNotNull { (key, values) ->
+                    values.firstOrNull()?.let { value -> key to value }
+                }.toMap(),
                 bodyProvider = {
                     if (method == "GET" || method == "HEAD") null else parseBody(session)
                 },
@@ -61,9 +65,18 @@ internal class DevlinkHttpServer(
             404 -> Response.Status.NOT_FOUND
             405 -> Response.Status.METHOD_NOT_ALLOWED
             409 -> Response.Status.CONFLICT
+            429 -> Response.Status.TOO_MANY_REQUESTS
             else -> Response.Status.INTERNAL_ERROR
         }
-        return NanoHTTPD.newFixedLengthResponse(status, response.contentType, response.body).apply {
+        val nanoResponse = response.binaryBody?.let { binaryBody ->
+            NanoHTTPD.newFixedLengthResponse(
+                status,
+                response.contentType,
+                ByteArrayInputStream(binaryBody),
+                binaryBody.size.toLong(),
+            )
+        } ?: NanoHTTPD.newFixedLengthResponse(status, response.contentType, response.body)
+        return nanoResponse.apply {
             response.headers.forEach { (name, value) -> addHeader(name, value) }
         }
     }

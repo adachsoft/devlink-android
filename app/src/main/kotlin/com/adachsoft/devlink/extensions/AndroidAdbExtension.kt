@@ -21,7 +21,12 @@ class AndroidAdbExtension(
 
     override fun statusSection(): JSONObject = state()
 
-    override fun handle(method: String, subPath: String, body: JSONObject?): ApiResponse? = when (subPath) {
+    override fun handle(
+        method: String,
+        subPath: String,
+        body: JSONObject?,
+        query: Map<String, String>,
+    ): ApiResponse? = when (subPath) {
         "/state" -> if (method.equals("GET", ignoreCase = true)) {
             ApiResponse.json(state())
         } else {

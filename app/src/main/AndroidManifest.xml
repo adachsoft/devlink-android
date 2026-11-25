@@ -32,6 +32,18 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Provide a private LAN HTTP API for device status and discovery." />
         </service>
+        <service
+            android:name=".DevlinkAccessibilityService"
+            android:label="@string/accessibility_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/devlink_accessibility_service" />
+        </service>
         <receiver
             android:name=".BootReceiver"
             android:enabled="true"

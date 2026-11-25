@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_service_label">devlink screenshots</string>
+    <string name="accessibility_service_description">Captures the screen only on an authenticated LAN request when the display.screenshot extension is enabled.</string>
+</resources>

@@ -25,7 +25,12 @@ class DeviceBatteryExtension(
 
     override fun statusSection(): JSONObject = batteryState()
 
-    override fun handle(method: String, subPath: String, body: JSONObject?): ApiResponse? {
+    override fun handle(
+        method: String,
+        subPath: String,
+        body: JSONObject?,
+        query: Map<String, String>,
+    ): ApiResponse? {
         if (subPath != "/state") {
             return null
         }

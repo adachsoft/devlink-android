@@ -7,6 +7,7 @@ import com.adachsoft.devlink.http.SourceAddressPolicy
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.IHTTPSession
 import fi.iki.elonen.NanoHTTPD.Response
+import java.io.DataInputStream
 import org.json.JSONObject
 
 internal class DevlinkHttpServer(
@@ -38,10 +39,16 @@ internal class DevlinkHttpServer(
     }
 
     private fun parseBody(session: IHTTPSession): JSONObject? {
-        val bodyFiles = HashMap<String, String>()
-        session.parseBody(bodyFiles)
-        val body = bodyFiles["postData"] ?: return null
-        return body.takeIf(String::isNotBlank)?.let(::JSONObject)
+        // Read the raw body ourselves: NanoHTTPD.parseBody() stores PUT bodies in a temp file
+        // under "content" (only POST lands in "postData"), so PUT payloads were lost.
+        val length = session.headers["content-length"]?.trim()?.toIntOrNull() ?: return null
+        if (length <= 0) {
+            return null
+        }
+        require(length <= MAX_BODY_BYTES) { "Request body too large." }
+        val bytes = ByteArray(length)
+        DataInputStream(session.inputStream).readFully(bytes)
+        return String(bytes, Charsets.UTF_8).takeIf(String::isNotBlank)?.let(::JSONObject)
     }
 
     private fun toNanoResponse(response: ApiResponse): Response {
@@ -63,5 +70,6 @@ internal class DevlinkHttpServer(
 
     companion object {
         const val PORT = 8787
+        private const val MAX_BODY_BYTES = 64 * 1024
     }
 }

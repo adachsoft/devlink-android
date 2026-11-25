@@ -7,6 +7,10 @@ android {
     namespace = "com.adachsoft.devlink"
     compileSdk = 36
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.adachsoft.devlink"
         minSdk = 26
@@ -35,4 +39,10 @@ kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
+}
+
+dependencies {
+    implementation(libs.nanohttpd)
+    testImplementation(libs.junit)
+    testImplementation(libs.json)
 }

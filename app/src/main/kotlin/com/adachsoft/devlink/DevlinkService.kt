@@ -211,7 +211,7 @@ class DevlinkService : Service() {
             }
 
             override fun onServiceResolved(resolved: NsdServiceInfo) {
-                val hostAddress = resolved.hostAddress?.hostAddress ?: return
+                val hostAddress = resolved.host?.hostAddress ?: return
                 val currentAddress = WifiIpAddressProvider.currentAddress(applicationContext) ?: return
                 if (hostAddress == currentAddress && resolved.port > 0) {
                     discoveredAdbHostAddress = currentAddress

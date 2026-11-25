@@ -5,7 +5,6 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import com.adachsoft.devlink.extensions.WifiConnection
 import com.adachsoft.devlink.extensions.WifiConnectionState
@@ -74,7 +73,7 @@ internal class WifiConnectionMonitor(context: Context) : WifiConnection {
             ssid = ssid,
             bssid = bssid,
             ipAddress = WifiIpAddressProvider.currentAddress(applicationContext),
-            rssiDbm = wifiInfo?.rssi?.takeUnless { it == WifiInfo.INVALID_RSSI },
+            rssiDbm = wifiInfo?.rssi?.takeUnless { it == INVALID_RSSI },
             linkSpeedMbps = wifiInfo?.linkSpeed?.takeIf { it >= 0 },
             frequencyMhz = wifiInfo?.frequency?.takeIf { it > 0 },
             lastDisconnectAt = lastDisconnectAt,
@@ -119,6 +118,8 @@ internal class WifiConnectionMonitor(context: Context) : WifiConnection {
     }
 
     companion object {
+        /** Hidden WifiInfo.INVALID_RSSI value (-127), not part of the public SDK. */
+        private const val INVALID_RSSI = -127
         private const val UNKNOWN_SSID = "<unknown ssid>"
         private const val REDACTED_BSSID = "02:00:00:00:00:00"
         private const val RECONNECT_TIMEOUT_MS = 15_000

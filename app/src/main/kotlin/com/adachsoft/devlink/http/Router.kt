@@ -1,6 +1,7 @@
 package com.adachsoft.devlink.http
 
 import java.util.Locale
+import org.json.JSONException
 import org.json.JSONObject
 
 class Router(
@@ -26,6 +27,9 @@ class Router(
         }
 
         val extension = extensionRegistry.findForPath(path)
+        if (extension != null && !extension.enabled) {
+            return ProblemResponses.notFound()
+        }
         val requiredScope = extension?.scope ?: BearerAuthenticator.CORE_SCOPE
         if (!authenticator.hasScope(requiredScope)) {
             return ProblemResponses.forbidden()
@@ -33,6 +37,11 @@ class Router(
 
         return try {
             route(method.uppercase(Locale.ROOT), path, bodyProvider, extension)
+        } catch (_: JSONException) {
+            ProblemResponses.badRequest(
+                detail = "The request body must be valid JSON.",
+                code = "invalid-json",
+            )
         } catch (_: Exception) {
             ProblemResponses.internalServerError()
         }

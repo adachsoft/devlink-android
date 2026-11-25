@@ -4,18 +4,24 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import com.adachsoft.devlink.ExtensionSettings
+import com.adachsoft.devlink.SharedPreferencesExtensionSettings
 import com.adachsoft.devlink.http.ApiResponse
 import com.adachsoft.devlink.http.DevlinkExtension
 import com.adachsoft.devlink.http.ProblemResponses
 import org.json.JSONObject
 import kotlin.math.roundToInt
 
-class DeviceBatteryExtension(context: Context) : DevlinkExtension {
+class DeviceBatteryExtension(
+    context: Context,
+    private val extensionSettings: ExtensionSettings = SharedPreferencesExtensionSettings(context),
+) : DevlinkExtension {
     private val applicationContext = context.applicationContext
 
     override val id: String = "device.battery"
     override val version: String = "0.1.0"
-    override val enabled: Boolean = true
+    override val enabled: Boolean
+        get() = extensionSettings.isEnabled(id)
 
     override fun statusSection(): JSONObject = batteryState()
 

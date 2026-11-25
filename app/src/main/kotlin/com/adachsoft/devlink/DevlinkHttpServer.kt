@@ -47,10 +47,13 @@ internal class DevlinkHttpServer(
     private fun toNanoResponse(response: ApiResponse): Response {
         val status = when (response.statusCode) {
             200 -> Response.Status.OK
+            202 -> Response.Status.ACCEPTED
+            400 -> Response.Status.BAD_REQUEST
             401 -> Response.Status.UNAUTHORIZED
             403 -> Response.Status.FORBIDDEN
             404 -> Response.Status.NOT_FOUND
             405 -> Response.Status.METHOD_NOT_ALLOWED
+            409 -> Response.Status.CONFLICT
             else -> Response.Status.INTERNAL_ERROR
         }
         return NanoHTTPD.newFixedLengthResponse(status, response.contentType, response.body).apply {

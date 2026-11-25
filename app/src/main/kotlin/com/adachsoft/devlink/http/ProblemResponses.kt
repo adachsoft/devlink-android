@@ -15,6 +15,12 @@ object ProblemResponses {
     fun forbidden(detail: String = "The bearer token does not have the required scope."): ApiResponse =
         problem(status = 403, title = "Forbidden", detail = detail)
 
+    fun badRequest(detail: String, code: String? = null): ApiResponse =
+        problem(status = 400, title = "Bad Request", detail = detail, code = code)
+
+    fun conflict(title: String, detail: String, code: String? = null): ApiResponse =
+        problem(status = 409, title = title, detail = detail, code = code)
+
     fun notFound(): ApiResponse =
         problem(status = 404, title = "Not Found", detail = "The requested resource was not found.")
 
@@ -36,15 +42,21 @@ object ProblemResponses {
         title: String,
         detail: String,
         headers: Map<String, String> = emptyMap(),
-    ): ApiResponse = ApiResponse(
-        statusCode = status,
-        body = JSONObject()
+        code: String? = null,
+    ): ApiResponse {
+        val body = JSONObject()
             .put("type", "about:blank")
             .put("title", title)
             .put("status", status)
             .put("detail", detail)
-            .toString(),
-        contentType = CONTENT_TYPE,
-        headers = headers,
-    )
+        if (code != null) {
+            body.put("code", code)
+        }
+        return ApiResponse(
+            statusCode = status,
+            body = body.toString(),
+            contentType = CONTENT_TYPE,
+            headers = headers,
+        )
+    }
 }

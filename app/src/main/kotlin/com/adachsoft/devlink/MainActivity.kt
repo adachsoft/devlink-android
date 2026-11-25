@@ -10,7 +10,9 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.Switch
 import android.widget.TextView
+import com.adachsoft.devlink.extensions.AndroidAdbExtension
 
 class MainActivity : Activity() {
     private lateinit var serviceStatus: TextView
@@ -18,6 +20,7 @@ class MainActivity : Activity() {
     private lateinit var tokenView: TextView
     private lateinit var toggleButton: Button
     private lateinit var token: String
+    private lateinit var extensionSettings: ExtensionSettings
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private val refreshRunnable = object : Runnable {
@@ -30,6 +33,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         token = TokenStore(applicationContext).getOrCreateToken()
+        extensionSettings = SharedPreferencesExtensionSettings(applicationContext)
         setContentView(createContentView())
         requestNotificationPermissionIfNeeded()
         startAgentService()
@@ -65,10 +69,25 @@ class MainActivity : Activity() {
         serviceStatus = addStatusLine(this, "Service: starting")
         networkAddress = addStatusLine(this, "Wi-Fi: unavailable:${DevlinkHttpServer.PORT}")
         tokenView = addStatusLine(this, "Token: $token", selectable = true)
+        addExtensionSwitch(this, "Device battery", "device.battery")
+        addExtensionSwitch(this, "Network Wi-Fi", "network.wifi")
+        addExtensionSwitch(this, "Android wireless debugging (sensitive)", AndroidAdbExtension.ID)
+        addExtensionSwitch(this, "Keep screen awake while charging (sensitive)", "power.keep-awake")
         toggleButton = Button(this@MainActivity).apply {
             setOnClickListener { toggleAgentService() }
         }
         addView(toggleButton, defaultLayoutParams())
+    }
+
+    private fun addExtensionSwitch(parent: LinearLayout, label: String, extensionId: String) {
+        val extensionSwitch = Switch(this@MainActivity).apply {
+            text = label
+            isChecked = extensionSettings.isEnabled(extensionId)
+            setOnCheckedChangeListener { _, enabled ->
+                extensionSettings.setEnabled(extensionId, enabled)
+            }
+        }
+        parent.addView(extensionSwitch, defaultLayoutParams())
     }
 
     private fun addStatusLine(
@@ -116,7 +135,8 @@ class MainActivity : Activity() {
             return
         }
         serviceStatus.text = "Service: ${if (DevlinkService.isRunning) "running" else "stopped"}"
-        networkAddress.text = "Wi-Fi: ${WifiIpAddressProvider.currentAddress(this)}:${DevlinkHttpServer.PORT}"
+        val address = WifiIpAddressProvider.currentAddress(this) ?: "unavailable"
+        networkAddress.text = "Wi-Fi: $address:${DevlinkHttpServer.PORT}"
         tokenView.text = "Token: $token"
         toggleButton.text = if (DevlinkService.isRunning) "Stop" else "Start"
     }

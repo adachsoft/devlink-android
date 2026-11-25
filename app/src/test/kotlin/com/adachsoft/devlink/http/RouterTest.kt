@@ -72,7 +72,7 @@ class RouterTest {
     @Test
     fun doesNotRouteDisabledExtensions() {
         val extension = FakeExtension(enabled = false)
-        val router = createRouter(listOf(extension), listOf(extension.scope))
+        val router = createRouter(listOf(extension))
 
         val response = router.handle(
             method = "GET",
@@ -82,6 +82,23 @@ class RouterTest {
 
         assertEquals(404, response.statusCode)
         assertFalse(JSONObject(response.body).has("trace"))
+    }
+
+    @Test
+    fun returnsBadRequestWhenRequestBodyIsInvalidJson() {
+        val extension = FakeExtension()
+        val router = createRouter(listOf(extension), listOf(extension.scope))
+
+        val response = router.handleWithBodyProvider(
+            method = "POST",
+            path = "${extension.basePath}/state",
+            authorizationHeader = "Bearer test-token",
+            bodyProvider = { JSONObject("{") },
+        )
+
+        assertEquals(400, response.statusCode)
+        assertEquals("application/problem+json", response.contentType)
+        assertEquals("invalid-json", JSONObject(response.body).getString("code"))
     }
 
     private fun createRouter(
